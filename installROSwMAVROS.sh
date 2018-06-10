@@ -16,6 +16,8 @@ fi
 set -e
 set -x
 
+pushd /home/apsync
+
 function usage
 {
     echo "Usage: ./installROS.sh [[-p package] | [-h]]"
@@ -34,7 +36,7 @@ function shouldInstallPackages
 {
     tput setaf 1
     echo "Your package list did not include a recommended base package"
-    tput sgr0 
+    tput sgr0
     echo "Please include one of the following:"
     echo "   ros-kinetic-ros-base"
     echo "   ros-kinetic-desktop"
@@ -121,7 +123,7 @@ done
 #
 # To find available packages:
 # apt-cache search ros-kinetic
-# 
+#
 apt-get install ros-kinetic-navigation -y
 apt-get install ros-kinetic-xacro -y
 apt-get install ros-kinetic-robot-state-publisher -y
@@ -145,7 +147,9 @@ apt-get install ros-kinetic-razor-imu-9dof -y
 apt-get install ros-kinetic-imu-transformer  -y
 apt-get install ros-kinetic-serial -y
 apt-get install ros-kinetic-mavros -y
-apt-get install ros-kinetic-rqt ros-kinetic-rqt-common-plugins ros-kinetic-rqt-robot-plugins -y
+apt-get install ros-kinetic-rqt -y
+apt-get install ros-kinetic-rqt-common-plugins -y
+apt-get install ros-kinetic-rqt-robot-plugins -y
 
 # Initialize rosdep
 tput setaf 2
@@ -170,6 +174,25 @@ echo "Installing rosinstall tools"
 tput sgr0
 apt-get install python-rosinstall python-rosinstall-generator python-wstool python-catkin-tools build-essential -y
 tput setaf 2
-echo "Installation complete!"
-tput sgr0
+echo "Setup Catking Workspace"
+mkdir -p AionR1_ws/src
+pushd AionR1_ws
+catkin init
+pushd src
+rm -rf aion_r1
+git clone https://github.com/aionrobotics/aion_r1.git
+popd
+catkin make
+popd
 
+echo "Add source Catking WS to .bashrc (todo)"
+
+#LINE="source ~/AionR1_ws/devel/setup.bash"
+#perl -pe "s%^exit 0%$LINE\\n\\nexit 0%" -i /home/apsync/.bashrc
+
+echo "Replace mavlink-router.conf file with modified one"
+cp /home/apsync/AionR1_ws/src/conf/mavlink-router.conf /home/apsync/start_mavlink-router
+ 
+
+echo "Installation complete! Please reboot for changes to take effect"
+tput sgr0
