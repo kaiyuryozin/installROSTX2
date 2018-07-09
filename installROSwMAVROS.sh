@@ -8,6 +8,16 @@
 # Green is 2
 # Reset is sgr0
 
+if [ $(id -u) -ne 0 ]; then
+   echo >&2 "Must be run as root"
+   exit 1
+fi
+
+set -e
+set -x
+
+pushd /home/apsync
+
 function usage
 {
     echo "Usage: ./installROS.sh [[-p package] | [-h]]"
@@ -80,19 +90,19 @@ fi
 tput setaf 2
 echo "Adding repository and source list"
 tput sgr0
-sudo apt-add-repository universe
-sudo apt-add-repository multiverse
-sudo apt-add-repository restricted
+apt-add-repository universe
+apt-add-repository multiverse
+apt-add-repository restricted
 
 # Setup sources.lst
-sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 # Setup keys
-sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 0xB01FA116
+apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 0xB01FA116
 # Installation
 tput setaf 2
 echo "Updating apt-get"
 tput sgr0
-sudo apt-get update
+apt-get update
 tput setaf 2
 echo "Installing ROS"
 tput sgr0
@@ -102,7 +112,7 @@ tput sgr0
 # Here we loop through any packages passed on the command line
 # Install packages ...
 for package in "${packages[@]}"; do
-  sudo apt-get install $package -y
+  apt-get install $package -y
 done
 
 # Add Individual Packages here
@@ -110,48 +120,49 @@ done
 # sudo apt-get install ros-kinetic-PACKAGE
 # e.g.
 # sudo apt-get install ros-kinetic-navigation
+#
 # To find available packages:
 # apt-cache search ros-kinetic
-sudo apt-get install ros-kinetic-navigation -y
-sudo apt-get install ros-kinetic-xacro -y
-sudo apt-get install ros-kinetic-robot-state-publisher -y
-sudo apt-get install ros-kinetic-joint-state-controller -y
-sudo apt-get install ros-kinetic-diff-drive-controller -y
-sudo apt-get install ros-kinetic-robot-localization -y
-sudo apt-get install ros-kinetic-twist-mux -y
-sudo apt-get install ros-kinetic-interactive-marker-twist-server -y
-sudo apt-get install ros-kinetic-opencv-apps -y
-sudo apt-get install ros-kinetic-gazebo-ros -y
-sudo apt-get install ros-kinetic-gmapping -y
-sudo apt-get install ros-kinetic-joy -y
-sudo apt-get install ros-kinetic-diagnostic-aggregator -y
-sudo apt-get install ros-kinetic-teleop-twist-joy -y
-sudo apt-get install ros-kinetic-image-transport -y
-sudo apt-get install ros-kinetic-joint-trajectory-controller -y
-sudo apt-get install ros-kinetic-joint-limits-interface -y
-sudo apt-get install ros-kinetic-controller-manager -y
-sudo apt-get install ros-kinetic-razor-imu-9dof -y
-sudo apt-get install ros-kinetic-imu-transformer  -y
-sudo apt-get install ros-kinetic-serial -y
-
-# Install other utilities
-sudo apt-get install libpcl1 -y
-sudo apt-get install libopencv-videostab2.4v5 -y
-sudo apt-get install joystick -y
-sudo apt-get install libncurses-dev -y
+#
+apt-get install ros-kinetic-navigation -y
+apt-get install ros-kinetic-xacro -y
+apt-get install ros-kinetic-robot-state-publisher -y
+apt-get install ros-kinetic-joint-state-controller -y
+apt-get install ros-kinetic-diff-drive-controller -y
+apt-get install ros-kinetic-robot-localization -y
+apt-get install ros-kinetic-twist-mux -y
+apt-get install ros-kinetic-interactive-marker-twist-server -y
+apt-get install ros-kinetic-opencv-apps -y
+apt-get install ros-kinetic-gazebo-ros -y
+apt-get install ros-kinetic-gmapping -y
+apt-get install ros-kinetic-joy -y
+apt-get install ros-kinetic-diagnostic-aggregator -y
+apt-get install ros-kinetic-teleop-twist-keyboard -y
+apt-get install ros-kinetic-teleop-twist-joy -y
+apt-get install ros-kinetic-image-transport -y
+apt-get install ros-kinetic-joint-trajectory-controller -y
+apt-get install ros-kinetic-joint-limits-interface -y
+apt-get install ros-kinetic-controller-manager -y
+apt-get install ros-kinetic-razor-imu-9dof -y
+apt-get install ros-kinetic-imu-transformer  -y
+apt-get install ros-kinetic-serial -y
+apt-get install ros-kinetic-mavros -y
+apt-get install ros-kinetic-rqt -y
+apt-get install ros-kinetic-rqt-common-plugins -y
+apt-get install ros-kinetic-rqt-robot-plugins -y
 
 # Initialize rosdep
 tput setaf 2
 echo "Installing rosdep"
 tput sgr0
-sudo apt-get install python-rosdep -y
+apt-get install python-rosdep -y
 # Certificates are messed up on the Jetson for some reason
-sudo c_rehash /etc/ssl/certs
+c_rehash /etc/ssl/certs
 # Initialize rosdep
 tput setaf 2
 echo "Initializaing rosdep"
 tput sgr0
-sudo rosdep init
+rosdep init
 # To find available packages, use:
 rosdep update
 # Environment Setup - Don't add /opt/ros/kinetic/setup.bash if it's already in bashrc
@@ -161,7 +172,27 @@ source ~/.bashrc
 tput setaf 2
 echo "Installing rosinstall tools"
 tput sgr0
-sudo apt-get install python-rosinstall python-rosinstall-generator python-wstool build-essential -y
+apt-get install python-rosinstall python-rosinstall-generator python-wstool python-catkin-tools build-essential -y
 tput setaf 2
-echo "Installation complete!"
+echo "Setup Catking Workspace"
+mkdir -p AionR1_ws/src
+pushd AionR1_ws
+catkin init
+pushd src
+rm -rf aion_r1
+git clone https://github.com/aionrobotics/aion_r1.git
+popd
+catkin make
+popd
+
+echo "Add source Catking WS to .bashrc (todo)"
+
+#LINE="source ~/AionR1_ws/devel/setup.bash"
+#perl -pe "s%^exit 0%$LINE\\n\\nexit 0%" -i /home/apsync/.bashrc
+
+echo "Replace mavlink-router.conf file with modified one"
+cp /home/apsync/AionR1_ws/src/conf/mavlink-router.conf /home/apsync/start_mavlink-router
+ 
+
+echo "Installation complete! Please reboot for changes to take effect"
 tput sgr0
