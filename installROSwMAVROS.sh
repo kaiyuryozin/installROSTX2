@@ -182,7 +182,7 @@ pushd src
 rm -rf aion_r1
 git clone https://github.com/aionrobotics/aion_r1.git
 popd
-catkin make
+catkin_make
 popd
 
 echo "Add source Catking WS to .bashrc (todo)"
