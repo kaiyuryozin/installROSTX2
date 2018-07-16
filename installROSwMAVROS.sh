@@ -188,12 +188,14 @@ popd
 
 echo "Add source Catking WS to .bashrc (todo)"
 
+grep -q -F 'source /home/apsync/AionR1_ws/devel/setup.bash' ~/.bashrc || echo "source /home/apsync/AionR1_ws/devel/setup.bash" >> ~/.bashrc
+source ~/.bashrc
 #LINE="source ~/AionR1_ws/devel/setup.bash"
 #perl -pe "s%^exit 0%$LINE\\n\\nexit 0%" -i /home/apsync/.bashrc
 
 echo "Replace mavlink-router.conf file with modified one"
-cp /home/apsync/AionR1_ws/src/conf/mavlink-router.conf /home/apsync/start_mavlink-router
- 
+cp /home/apsync/AionR1_ws/src/aion_r1/r1_control/config/mavlink-router.conf /home/apsync/start_mavlink-router
+
 
 echo "Installation complete! Please reboot for changes to take effect"
 tput sgr0
