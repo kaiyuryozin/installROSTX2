@@ -13,8 +13,8 @@
 #   exit 1
 #fi
 
-#set -e
-#set -x
+set -e
+set -x
 
 pushd /home/apsync
 
@@ -163,6 +163,7 @@ sudo c_rehash /etc/ssl/certs
 tput setaf 2
 echo "Initializaing rosdep"
 tput sgr0
+sudo rm /etc/ros/rosdep/sources.list.d/20-default.list
 sudo rosdep init
 # To find available packages, use:
 rosdep update
@@ -176,6 +177,7 @@ tput sgr0
 sudo apt-get install python-rosinstall python-rosinstall-generator python-wstool python-catkin-tools build-essential -y
 tput setaf 2
 echo "Setup Catking Workspace"
+rm -rf AionR1_ws
 mkdir -p AionR1_ws/src
 pushd AionR1_ws
 catkin init
@@ -183,7 +185,7 @@ pushd src
 rm -rf aion_r1
 git clone https://github.com/aionrobotics/aion_r1.git
 popd
-catkin make
+catkin_make
 popd
 
 echo "Add source Catking WS to .bashrc (todo)"
@@ -193,9 +195,11 @@ source ~/.bashrc
 #LINE="source ~/AionR1_ws/devel/setup.bash"
 #perl -pe "s%^exit 0%$LINE\\n\\nexit 0%" -i /home/apsync/.bashrc
 
+echo "Install geographiclib datasets"
+sudo /opt/ros/kinetic/lib/mavros/install_geographiclib_datasets.sh
+
 echo "Replace mavlink-router.conf file with modified one"
 cp /home/apsync/AionR1_ws/src/aion_r1/r1_control/config/mavlink-router.conf /home/apsync/start_mavlink-router
-
 
 echo "Installation complete! Please reboot for changes to take effect"
 tput sgr0
