@@ -163,13 +163,13 @@ sudo c_rehash /etc/ssl/certs
 tput setaf 2
 echo "Initializaing rosdep"
 tput sgr0
-sudo rm /etc/ros/rosdep/sources.list.d/20-default.list
+sudo rm /etc/ros/rosdep/sources.list.d/20-default.list && echo "OK" || echo "No 20-default.list file"
 sudo rosdep init
 # To find available packages, use:
 rosdep update
 # Environment Setup - Don't add /opt/ros/kinetic/setup.bash if it's already in bashrc
 grep -q -F 'source /opt/ros/kinetic/setup.bash' ~/.bashrc || echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc
-source ~/.bashrc
+. ~/.bashrc
 # Install rosinstall
 tput setaf 2
 echo "Installing rosinstall tools"
@@ -191,7 +191,7 @@ popd
 echo "Add source Catking WS to .bashrc (todo)"
 
 grep -q -F 'source /home/apsync/AionR1_ws/devel/setup.bash' ~/.bashrc || echo "source /home/apsync/AionR1_ws/devel/setup.bash" >> ~/.bashrc
-source ~/.bashrc
+. ~/.bashrc
 #LINE="source ~/AionR1_ws/devel/setup.bash"
 #perl -pe "s%^exit 0%$LINE\\n\\nexit 0%" -i /home/apsync/.bashrc
 
